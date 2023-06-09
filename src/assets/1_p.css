@@ -1,0 +1,62 @@
+:root {
+	--size: 50%;
+	--fill-color: #ccc;
+	--in-color: #fff;
+	--ring-width: 20%;
+	--speed: 900ms;
+}
+.fild {
+	width: 100%;
+	height: 100%;
+}
+.in-center {
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	-ms-align-items: center;
+	align-items: center;
+	justify-content: center;
+}
+.context {
+	position: relative;
+	width: var(--size);
+	aspect-ratio: 1/1;
+	border-radius: var(--size);
+	overflow: hidden;
+	max-width: 100vh;
+}
+.external {
+	width: calc(var(--size)*2);
+	height: calc(var(--size)*2);
+	background: var(--fill-color);
+	border-radius: var(--size);
+	overflow: hidden;
+	animation: rotation var(--speed) linear infinite
+}
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	50% {
+		transform: rotate(180deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+.internal {
+	width: calc(var(--size)*2 - var(--ring-width));
+	height: calc(var(--size)*2 - var(--ring-width));
+	background: var(--in-color);
+	border-radius: var(--size);
+}
+.stick {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: var(--size);
+	height: var(--size);
+	background: var(--in-color);
+}

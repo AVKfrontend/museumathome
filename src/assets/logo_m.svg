@@ -1,0 +1,11 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425 227" width="425" height="227">
+	<title>logo-svg</title>
+	<style>
+		.s0 { fill: #fa0 } 
+		.s1 { fill: #34495e } 
+	</style>
+	<path id="Layer" class="s0" d="m100.9 227l30.2-52.4 30.3 52.4h100.6l-130.9-226.7-130.8 226.7z"/>
+	<path id="Layer copy 2" class="s0" d="m262.9 227l30.2-52.4 30.3 52.4h100.6l-130.9-226.7-130.8 226.7z"/>
+	<path id="Layer" class="s1" d="m100.9 227l30.2-52.4 30.3 52.4h48.3l-78.6-136-78.5 136z"/>
+	<path id="Layer copy" class="s1" d="m261.9 227l30.2-52.4 30.3 52.4h48.3l-78.6-136-78.5 136z"/>
+</svg>
