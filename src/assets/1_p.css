@@ -1,14 +1,20 @@
 :root {
-	--size: 50%;
-	--fill-color: #ccc;
-	--in-color: #fff;
-	--ring-width: 20%;
-	--speed: 900ms;
+	--transparent_center-size: 50%;
+	--transparent_center-fill-color: #ccc;
+	--transparent_center-ring-width: 1.25rem;
+	--transparent_center-spid: 900ms;
 }
+
+* {
+	box-sizing: border-box;
+}
+
 .fild {
 	width: 100%;
 	height: 100%;
+	max-height: 100vh;
 }
+
 .in-center {
 	display: -webkit-flex;
 	display: -moz-flex;
@@ -19,44 +25,35 @@
 	align-items: center;
 	justify-content: center;
 }
-.context {
-	position: relative;
-	width: var(--size);
+
+#transparent_center .context {
+	width: var(--transparent_center-size);
 	aspect-ratio: 1/1;
-	border-radius: var(--size);
+	border-radius: var(--transparent_center-size);
 	overflow: hidden;
-	max-width: 100vh;
 }
-.external {
-	width: calc(var(--size)*2);
-	height: calc(var(--size)*2);
-	background: var(--fill-color);
-	border-radius: var(--size);
-	overflow: hidden;
-	animation: rotation var(--speed) linear infinite
+
+#transparent_center .external {
+	width: calc(var(--transparent_center-size)*2);
+	aspect-ratio: 1/1;
+	border-style: solid;
+	border-width: var(--transparent_center-ring-width);
+	border-color: var(--transparent_center-fill-color);
+	border-left-color: transparent;
+	border-radius: var(--transparent_center-size);
+	animation: transparent_center-rotation var(--transparent_center-spid) linear infinite
 }
-@keyframes rotation {
+
+@keyframes transparent_center-rotation {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	50% {
 		transform: rotate(180deg);
 	}
+
 	100% {
 		transform: rotate(360deg);
 	}
-}
-.internal {
-	width: calc(var(--size)*2 - var(--ring-width));
-	height: calc(var(--size)*2 - var(--ring-width));
-	background: var(--in-color);
-	border-radius: var(--size);
-}
-.stick {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: var(--size);
-	height: var(--size);
-	background: var(--in-color);
 }

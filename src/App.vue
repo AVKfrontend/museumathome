@@ -12,12 +12,14 @@
               <MuseumChoice :selected-museum="selectedMuseum" @museum-change="MuseumChange" />
             </div>
             <div class="box">
-              <template v-if="selectedMuseumObject?.urls?.categories">
-                <p class="select-label">Choose a category</p>
-                <DisplaySetting :category-id="selectedCategoryId" :start-category="$options.startCategory"
-                  :categories-url="selectedMuseumObject.urls.categories"
-                  :get-categories="selectedMuseumObject.getCategories" @category-change="CategoryChange" />
-              </template>
+              <Transition type="transition" name="opacity">
+                <div v-if="selectedMuseumObject?.urls?.categories">
+                  <p class="select-label">Choose a category</p>
+                  <DisplaySetting :category-id="selectedCategoryId" :start-category="$options.startCategory"
+                    :categories-url="selectedMuseumObject.urls.categories"
+                    :get-categories="selectedMuseumObject.getCategories" @category-change="CategoryChange" />
+                </div>
+              </Transition>
             </div>
           </div>
         </div>
@@ -27,10 +29,13 @@
           <hr class="line" />
           <h1 class="title main-title">{{ selectedMuseumObject.m_name }}</h1>
           <h2 class="title category-title">{{ selectedCategoryObject.name }}</h2>
+          <h3 v-if="selectedCategoryObject.about" class="title category-title">{{ selectedCategoryObject.about }}</h3>
           <template v-if="selectedCategoryObject.name">
             <hr class="line" />
-            <ContentManager :samples-ids-list="samplesIdsList" :sample-url="selectedMuseumObject.urls.sample"
-              :get-sample="selectedMuseumObject.getSample" />
+            <Transition appear type="transition" name="scale">
+              <ContentManager :samples-ids-list="samplesIdsList" :sample-url="selectedMuseumObject.urls.sample"
+                :get-sample="selectedMuseumObject.getSample" />
+            </Transition>
           </template>
         </div>
       </main>
@@ -92,12 +97,16 @@ export default {
       this.selectedCategoryObject = newObj
     },
     async setSamplesIdsList() {
-      this.samplesIdsList = await setListOfIds(this.selectedCategoryId, this.selectedMuseumObject.urls.categoriesIDs, this.selectedMuseumObject.getListOfIds)
+      this.samplesIdsList = await setListOfIds(
+        this.selectedCategoryId,
+        this.selectedMuseumObject.urls.categoriesIDs,
+        this.selectedMuseumObject.getListOfIds
+      )
     }
   },
   watch: {
     selectedCategoryId(v) {
-      v ? this.setSamplesIdsList() : this.samplesIdsList = []
+      v != 0 ? this.setSamplesIdsList() : this.samplesIdsList = []
     },
     pageParam(v) {
       const url = new URL(document.URL)

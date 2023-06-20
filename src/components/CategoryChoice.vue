@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     async getCategoriesForDisplay(url) {
-      const resp = await getApiResponse(url)
+      const resp = url !== 'static' ? await getApiResponse(url) : ''
       this.categories = this.getCategories(resp)
     },
     nameNormalise(string) {

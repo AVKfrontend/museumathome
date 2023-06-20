@@ -1,26 +1,31 @@
 <template>
   <section class="samples">
-    <Preloader v-if="!currentPage.length" />
+    <div v-if="!currentPage.length" class="preloader-wrupper">
+      <Preloader />
+      <span class="preloader-wrupper__message">Please wait. Data is loading.</span>
+    </div>
     <ul v-else class="samples__list">
-      <li v-for="sample in currentPage" class="samples__item">
-        <h3 class="title samples__item-title">{{ sample.title }}</h3>
-        <picture class="samples__picture">
-          <img v-if="sample.pic" :src="sample.pic" @load="initEndOfLoad()" v-on:click="zoomImg" alt="">
-          <Preloader v-else />
-        </picture>
-        <p class="samples__item-autor">{{ sample.autor }}</p>
-      </li>
+      <TransitionGroup appear type="transition" name="scale">
+        <li v-for="sample in currentPage" :key="sample.key" class="samples__item">
+          <h3 class="title samples__item-title">{{ sample.title }}</h3>
+          <picture class="samples__picture">
+            <img v-if="!!sample.pic" :src="sample.pic" @load="initEndOfLoad()" v-on:click="zoomImg" alt="">
+            <Preloader v-else />
+          </picture>
+          <p class="samples__item-autor">{{ sample.autor }}</p>
+        </li>
+      </TransitionGroup>
     </ul>
     <div class="pagination">
       <div>
         <button v-if="page > 1" @click="page--">Previous</button>
         <span>Page </span>
-        <input v-model="page" type="text" size="5">
+        <input v-model.lazy.trim="page" type="text" size="5" @keydown.enter="bluring">
         <span> of {{ maxPage }}</span>
         <button v-if="page < maxPage" @click="page++">Next</button>
       </div>
       <label for="per-page">On page:
-        <input v-model="samplesPerPage" id="per-page" type="number">
+        <input v-model.trim="samplesPerPage" id="per-page" type="number">
       </label>
     </div>
   </section>
@@ -28,11 +33,11 @@
 
 <script>
 
-import { getApiResponse } from '../api/api.js'
+import { getSamplesInfo } from '../api/extractingData.js'
 import Preloader from './Preloader.vue'
 export default {
   loadEnd: null,
-  zoomEnd: null,
+  delay: 7000,
   components: {
     Preloader
   },
@@ -58,39 +63,39 @@ export default {
     }
   },
   computed: {
+    firstIndexOnNextPage() {
+      return this.page * this.samplesPerPage
+    },
+    firstIndexOnPage() {
+      return this.firstIndexOnNextPage - this.samplesPerPage
+    },
     currentPageList() {
-      const end = this.page * this.samplesPerPage
-      return this.samplesIdsList.slice(end - this.samplesPerPage, end)
+      return this.samplesIdsList.slice(this.firstIndexOnPage, this.firstIndexOnNextPage)
     },
     maxPage() {
       return Math.ceil(this.samplesIdsList.length / this.samplesPerPage)
     },
     currentPage() {
-      const end = this.page * this.samplesPerPage
-      return this.samples.slice(end - this.samplesPerPage, end)
+      return this.samples.slice(this.firstIndexOnPage, this.firstIndexOnNextPage)
     }
   },
   methods: {
     async setSamplesInfo() {
-      for await (const sampObj of this.getSamplesInfo(this.currentPageList)) {
-        this.samples.push(sampObj)
+      const listForLoading = this.currentPageList.map(vol => (!this.samples.find(el => el.id === vol)) ? vol : null)
+      for await (const respObj of getSamplesInfo(listForLoading, this.sampleUrl, this.getSample)) {
+        this.samples[this.firstIndexOnPage + respObj.ind] = respObj.vol
       }
       this.setPictures()
     },
-    async *getSamplesInfo(arrIds) {
-      for (let i = 0; i < arrIds.length; i++) {
-        if (this.samples.find(el => el.id === arrIds[i])) continue
-        const resp = await getApiResponse(this.sampleUrl(arrIds[i]))
-        const normalisedResp = this.getSample(resp)
-        yield normalisedResp
-      }
-    },
     async setPictures() {
       for (let i = 0; i < this.currentPage.length; i++) {
-        if (this.currentPage[i].pic) continue
+        if (!!this.currentPage[i].pic) continue
         await new Promise(resolve => setTimeout(resolve, 1000))
-        this.currentPage[i].pic = this.currentPage[i].img ? this.currentPage[i].img : '/src/assets/image-available-icon.webp'
-        await new Promise(resolve => this.$options.loadEnd = resolve)
+        this.currentPage[i].pic = (!!this.currentPage[i].img) ? this.currentPage[i].img : '/src/assets/image-available-icon.webp'
+        await new Promise(resolve => {
+          this.$options.loadEnd = resolve
+          setTimeout(resolve, this.$options.delay)
+        })
       }
       this.$options.loadEnd = null
       this.cashedPages.add(this.page)
@@ -114,12 +119,19 @@ export default {
     },
     async zoomImg(even) {
       even.target.requestFullscreen()
+    },
+    bluring(event) {
+      event.target.blur()
     }
   },
   created() {
   },
   watch: {
     page(v) {
+      if (v > this.maxPage) {
+        this.page = this.maxPage
+        return
+      }
       if (this.cashedPages.has(v)) return
       this.setSamplesInfo()
     },
@@ -127,7 +139,7 @@ export default {
       this.resizeCash(V, oldV)
     },
     samplesIdsList() {
-      this.samples = []
+      this.samples = this.samplesIdsList.map(el => ({ key: el }))
       this.page = 1
       this.cashedPages.clear()
       this.setSamplesInfo()

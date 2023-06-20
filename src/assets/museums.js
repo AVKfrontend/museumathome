@@ -1,3 +1,4 @@
+import { euromuseums } from './europeana.js'
 export const museums = {
   "99": {
     id: "99",
@@ -20,7 +21,7 @@ export const museums = {
       return respObj.objectIDs
     },
     getSample(respObj) {
-      return { 'id': respObj.objectID, 'title': respObj.title, 'autor': respObj.artistDisplayName, 'img': respObj.primaryImage }
+      return { 'id': respObj.objectID, 'title': respObj.title, 'autor': respObj.artistDisplayName, 'img': respObj.primaryImage, 'key': respObj.objectID }
     }
   },
   "2": {
@@ -58,7 +59,30 @@ export const museums = {
     },
     getSample(respObj) {
       const img = respObj.data.image_id ? `https://www.artic.edu/iiif/2/${respObj.data.image_id}/full/843,/0/default.jpg` : ''
-      return { 'id': respObj.data.id, 'title': respObj.data.title, 'autor': respObj.data.artist_display, 'img': img }
+      return { 'id': respObj.data.id, 'title': respObj.data.title, 'autor': respObj.data.artist_display, 'img': img, 'key': respObj.data.id }
+    }
+  },
+  "3": {
+    id: "3",
+    m_name: "Europeana - European museums",
+    urls: {
+      background: './img/europeana__1_.webp',
+      categories: 'static',
+      sample(strId) { return `https://api.europeana.eu/record/${strId}.json?wskey=owhansore` },
+      categoriesIDs(strId) { return `https://api.europeana.eu/record/v2/search.json?query=${strId}&wskey=owhansore&rows=200&start=1&media=true&reusability=open&profile=minimal` }
+    },
+    getCategories() { return euromuseums },
+    getListOfIds(respObj) {
+      const itemsObjs = respObj.items
+      return itemsObjs.map(el => el.id)
+    },
+    getSample(respObj) {
+      const title_0 = respObj.object.proxies?.[1].dcTitle?.en?.[0] ?? respObj.object.proxies?.[1].dcTitle?.def?.[0]
+      const title = title_0 ?? Object.values(respObj.object.proxies?.[1].dcTitle)[0][0] ?? 'No title'
+      const autor_0 = respObj.object.agents?.[0].foafName?.en?.[0] ?? respObj.object.agents?.[0].foafName?.def?.[0]
+      const autor = autor_0 ?? respObj.object.agents?.[0].prefLabel?.en?.[0] ?? respObj.object.agents?.[0].prefLabel?.def?.[0] ?? ''
+      const img = respObj.object.aggregations?.[0].edmIsShownBy ?? ''
+      return { 'id': respObj.object.about, 'title': title, 'autor': autor, 'img': img, 'key': respObj.object.about }
     }
   }
 }

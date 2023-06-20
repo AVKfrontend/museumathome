@@ -1,9 +1,7 @@
 <template>
-  <div class="fild in-center">
+  <div id="transparent_center" class="fild in-center">
     <div class="context">
-      <div class="external in-center">
-        <div class="internal"></div>
-        <span class="stick"></span>
+      <div class="external">
       </div>
     </div>
   </div>

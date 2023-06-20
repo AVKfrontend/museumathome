@@ -5,3 +5,11 @@ export async function setListOfIds(categoryId, categoryUrl, getListOfIds) {
   const list = await getListOfIds(resp)
   return list
 }
+export async function* getSamplesInfo(arrIds, sampleUrl, getSample) {
+  for (let i = 0; i < arrIds.length; i++) {
+    if (!arrIds[i]) continue
+    const resp = await getApiResponse(sampleUrl(arrIds[i]))
+    const normalisedResp = getSample(resp)
+    yield { "ind": i, 'vol': normalisedResp }
+  }
+}
