@@ -9,25 +9,30 @@
         <li v-for="sample in currentPage" :key="sample.key" class="samples__item">
           <h3 class="title samples__item-title">{{ sample.title }}</h3>
           <picture class="samples__picture">
-            <img v-if="!!sample.pic" :src="sample.pic" @load="initEndOfLoad()" v-on:click="zoomImg" alt="">
+            <template v-if="!!sample.pic">
+              <object v-if="picTypeIsPdf(sample.pic)" :data="sample.pic" @load="initEndOfLoad()" @error="initImgErr"
+                width="100%" heigth="100%" v-on:click="zoomImg"></object>
+              <img v-else :src="sample.pic" @load="initEndOfLoad()" @error="initImgErr" v-on:click="zoomImg"
+                alt="Failed to load image">
+            </template>
             <Preloader v-else />
           </picture>
           <p class="samples__item-autor">{{ sample.autor }}</p>
         </li>
       </TransitionGroup>
     </ul>
-    <div class="pagination">
+    <fieldset class="pagination" :disabled="blockInput">
       <div>
         <button v-if="page > 1" @click="page--">Previous</button>
         <span>Page </span>
-        <input v-model.lazy.trim="page" type="text" size="5" @keydown.enter="bluring">
+        <input v-model.lazy.trim="page" type="text" size="6" @keydown.enter="bluring">
         <span> of {{ maxPage }}</span>
         <button v-if="page < maxPage" @click="page++">Next</button>
       </div>
       <label for="per-page">On page:
         <input v-model.trim="samplesPerPage" id="per-page" type="number">
       </label>
-    </div>
+    </fieldset>
   </section>
 </template>
 
@@ -51,9 +56,14 @@ export default {
     },
     getSample: {
       type: Function
+    },
+    blockInput: {
+      type: Boolean
     }
   },
-  emits: {},
+  emits: {
+    'unBlockUi': null
+  },
   data() {
     return {
       samples: [],
@@ -91,7 +101,7 @@ export default {
       for (let i = 0; i < this.currentPage.length; i++) {
         if (!!this.currentPage[i].pic) continue
         await new Promise(resolve => setTimeout(resolve, 1000))
-        this.currentPage[i].pic = (!!this.currentPage[i].img) ? this.currentPage[i].img : '/src/assets/image-available-icon.webp'
+        this.currentPage[i].pic = (!!this.currentPage[i].img) ? this.currentPage[i].img : '../../public/img/image-available-icon.webp'
         await new Promise(resolve => {
           this.$options.loadEnd = resolve
           setTimeout(resolve, this.$options.delay)
@@ -99,6 +109,7 @@ export default {
       }
       this.$options.loadEnd = null
       this.cashedPages.add(this.page)
+      this.$emit('unBlockUi')
     },
     initEndOfLoad() {
       if (this.$options.loadEnd instanceof Function) this.$options.loadEnd()
@@ -122,6 +133,12 @@ export default {
     },
     bluring(event) {
       event.target.blur()
+    },
+    initImgErr(err) {
+      console.log(err)
+    },
+    picTypeIsPdf(picUrl) {
+      return picUrl.endsWith('pdf')
     }
   },
   created() {
@@ -137,13 +154,14 @@ export default {
     },
     samplesPerPage(V, oldV) {
       this.resizeCash(V, oldV)
+      this.setSamplesInfo()
     },
     samplesIdsList() {
       this.samples = this.samplesIdsList.map(el => ({ key: el }))
       this.page = 1
       this.cashedPages.clear()
       this.setSamplesInfo()
-    }
+    },
   }
 }
 </script>

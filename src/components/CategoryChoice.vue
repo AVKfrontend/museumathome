@@ -21,6 +21,10 @@ export default {
       type: String
     },
   },
+  emits: {
+    'category-change': null,
+    'blockUi': null,
+  },
   data() {
     return {
       categories: [],
@@ -57,7 +61,8 @@ export default {
     categoriesUrl() {
       this.changePageParams()
     },
-    category() {
+    category(v) {
+      if (v != 0) this.$emit('blockUi')
       this.changeCategoryRequest()
     }
   },

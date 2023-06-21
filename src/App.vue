@@ -3,7 +3,7 @@
     <div class="content-wrupper">
       <header>
         <div class="container">
-          <div class="wrapper">
+          <fieldset class="wrapper" :disabled="blockInput">
             <div class="box">
               <img alt="MatH logo" class="logo" src="./assets/logo_m.svg" width="125" />
             </div>
@@ -17,11 +17,12 @@
                   <p class="select-label">Choose a category</p>
                   <DisplaySetting :category-id="selectedCategoryId" :start-category="$options.startCategory"
                     :categories-url="selectedMuseumObject.urls.categories"
-                    :get-categories="selectedMuseumObject.getCategories" @category-change="CategoryChange" />
+                    :get-categories="selectedMuseumObject.getCategories" @block-ui="blockInput = true"
+                    @category-change="CategoryChange" />
                 </div>
               </Transition>
             </div>
-          </div>
+          </fieldset>
         </div>
       </header>
       <main>
@@ -34,7 +35,8 @@
             <hr class="line" />
             <Transition appear type="transition" name="scale">
               <ContentManager :samples-ids-list="samplesIdsList" :sample-url="selectedMuseumObject.urls.sample"
-                :get-sample="selectedMuseumObject.getSample" />
+                :get-sample="selectedMuseumObject.getSample" :blockInput="blockInput"
+                @un-block-ui="(blockInput = false)" />
             </Transition>
           </template>
         </div>
@@ -70,7 +72,8 @@ export default {
     return {
       selectedMuseumObject: {},
       selectedCategoryObject: {},
-      samplesIdsList: []
+      samplesIdsList: [],
+      blockInput: false
     }
   },
   computed: {

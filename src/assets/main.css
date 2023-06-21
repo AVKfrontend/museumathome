@@ -1,5 +1,5 @@
 @import './reset.css';
-@import url(../assets/1_p.css);
+@import url('../assets/1_p.css');
 
 @media (hover: hover) {
   a:hover {
@@ -16,6 +16,9 @@ body {
   height: 100%;
 }
 
+fieldset {
+  border: 0;
+}
 
 .footer {
   align-self: flex-end;
@@ -45,7 +48,6 @@ body {
 .line {
   color: blueviolet;
   width: 100%;
-  border: 1px, solid, black;
 }
 
 .container {
@@ -156,9 +158,11 @@ select {
   display: block;
   width: 100%;
   min-height: 50px;
+  text-align: center;
 }
 
-.samples__picture img {
+.samples__picture img,
+.samples__picture object {
   width: 100%;
   object-fit: cover;
   cursor: pointer;

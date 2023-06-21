@@ -1,5 +1,5 @@
 <template>
-  <select v-model="museumForSelect" @input="selectHendler" name="museum" id="museum" autofocus>
+  <select v-model="museumForSelect" @change="selectHendler" name="museum" id="museum" autofocus>
     <option selected value="0">no-choiced</option>
     <option v-for="museum in museumsList" :key="museum.id" :value="museum.id">{{ museum.m_name }}</option>
   </select>
@@ -13,7 +13,7 @@ export default {
       type: String,
       required: true,
       default: '0'
-    }
+    },
   },
   emits: {
     'museum-change': null
