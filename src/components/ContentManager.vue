@@ -1,6 +1,6 @@
 <template>
   <section class="samples">
-    <div v-if="!currentPage.length" class="preloader-wrupper">
+    <div v-if="blockInput & onLoad" class="preloader-wrupper">
       <Preloader />
       <span class="preloader-wrupper__message">Please wait. Data is loading.</span>
     </div>
@@ -40,6 +40,7 @@
 
 import { getSamplesInfo } from '../api/extractingData.js'
 import Preloader from './Preloader.vue'
+import { nextTick } from 'vue'
 export default {
   loadEnd: null,
   delay: 7000,
@@ -69,7 +70,8 @@ export default {
       samples: [],
       samplesPerPage: 6,
       page: 1,
-      cashedPages: new Set()
+      cashedPages: new Set(),
+      onLoad: true,
     }
   },
   computed: {
@@ -82,17 +84,20 @@ export default {
     currentPageList() {
       return this.samplesIdsList.slice(this.firstIndexOnPage, this.firstIndexOnNextPage)
     },
+    listForLoading() {
+      return this.currentPageList.map(vol => (!this.samples.find(el => el.id === vol)) ? vol : null)
+    },
     maxPage() {
       return Math.ceil(this.samplesIdsList.length / this.samplesPerPage)
     },
     currentPage() {
       return this.samples.slice(this.firstIndexOnPage, this.firstIndexOnNextPage)
-    }
+    },
   },
   methods: {
     async setSamplesInfo() {
-      const listForLoading = this.currentPageList.map(vol => (!this.samples.find(el => el.id === vol)) ? vol : null)
-      for await (const respObj of getSamplesInfo(listForLoading, this.sampleUrl, this.getSample)) {
+      for await (const respObj of getSamplesInfo(this.listForLoading, this.sampleUrl, this.getSample)) {
+        if (this.onLoad) this.onLoad = false
         this.samples[this.firstIndexOnPage + respObj.ind] = respObj.vol
       }
       this.setPictures()
@@ -101,7 +106,7 @@ export default {
       for (let i = 0; i < this.currentPage.length; i++) {
         if (!!this.currentPage[i].pic) continue
         await new Promise(resolve => setTimeout(resolve, 1000))
-        this.currentPage[i].pic = (!!this.currentPage[i].img) ? this.currentPage[i].img : '../../public/img/image-available-icon.webp'
+        this.currentPage[i].pic = (!!this.currentPage[i].img) ? this.currentPage[i].img : './img/image-available-icon.webp'
         await new Promise(resolve => {
           this.$options.loadEnd = resolve
           setTimeout(resolve, this.$options.delay)
@@ -110,6 +115,7 @@ export default {
       this.$options.loadEnd = null
       this.cashedPages.add(this.page)
       this.$emit('unBlockUi')
+      this.onLoad = true
     },
     initEndOfLoad() {
       if (this.$options.loadEnd instanceof Function) this.$options.loadEnd()
@@ -128,7 +134,7 @@ export default {
       }
       this.page = Math.floor(currentSempleInd / samplPerP) + 1
     },
-    async zoomImg(even) {
+    zoomImg(even) {
       even.target.requestFullscreen()
     },
     bluring(event) {
@@ -157,9 +163,10 @@ export default {
       this.setSamplesInfo()
     },
     samplesIdsList() {
+      // this.samples = []
       this.samples = this.samplesIdsList.map(el => ({ key: el }))
-      this.page = 1
       this.cashedPages.clear()
+      this.page = 1
       this.setSamplesInfo()
     },
   }
